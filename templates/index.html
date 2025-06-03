@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% if admin %}PÁGINA DE ADMIN{% else %}PRODUTOS EM STOCK{% endif %}</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='ico.png') }}">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .container {
+            flex: 1 0 auto;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            margin: 20px auto;
+            background-color: #fff;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        form {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        input[type="password"] {
+            padding: 8px;
+            width: 200px;
+        }
+
+        input[type="submit"] {
+            padding: 8px 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            margin: 0 5px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .pagination button:hover {
+            background-color: #0056b3;
+        }
+
+        .error-message {
+            color: red;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            background-color: #003366;
+            color: white;
+            font-size: 0.9em;
+            padding: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>{% if admin %}PÁGINA DE ADMIN{% else %}PRODUTOS EM STOCK{% endif %}</h1>
+    <div class="intro">
+        Esta página mostra os produtos disponíveis no armazém. Use a senha para ver mais detalhes.
+    </div>
+
+    <table id="stockTable">
+        <thead>
+            <tr>
+                {% for key in items[0].keys() %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                {% for value in item.values() %}
+                    <td>{{ value }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        <button onclick="prevPage()">ANTERIOR</button>
+        <span id="pageInfo"></span>
+        <button onclick="nextPage()">PRÓXIMO</button>
+    </div>
+
+    <form method="POST" action="/admin">
+        {% if senha_incorreta %}
+            <div class="error-message">
+                ⚠️ Senha incorreta, tente novamente.
+            </div>
+        {% endif %}
+        <label><strong>PASSWORD:</strong></label>
+        <input type="password" name="senha" required>
+        <input type="submit" value="LOGIN">
+    </form>
+  </div>
+
+  <footer>
+      &copy; 2025 Gestão de Stocks | Desenvolvido por Grupo 7
+  </footer>
+
+<script>
+    const rowsPerPage = 10;
+    let currentPage = 1;
+    const table = document.getElementById("stockTable");
+    const rows = table.querySelectorAll("tbody tr");
+    const pageInfo = document.getElementById("pageInfo");
+
+    function showPage(page) {
+        const start = (page - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+
+        rows.forEach((row, index) => {
+            row.style.display = (index >= start && index < end) ? "" : "none";
+        });
+
+        pageInfo.textContent = `Página ${page} de ${Math.ceil(rows.length / rowsPerPage)}`;
+    }
+
+    function nextPage() {
+        if (currentPage < Math.ceil(rows.length / rowsPerPage)) {
+            currentPage++;
+            showPage(currentPage);
+        }
+    }
+
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            showPage(currentPage);
+        }
+    }
+
+    showPage(currentPage);
+</script>
+
+</body>
+</html>
