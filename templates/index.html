@@ -3,6 +3,7 @@
 <head>
     <title>{% if admin %}PÁGINA DE ADMIN{% else %}PRODUTOS EM STOCK{% endif %}</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='ico.png') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         html, body {
             height: 100%;
@@ -102,6 +103,13 @@
             margin-bottom: 10px;
         }
 
+        #map {
+            height: 400px;
+            width: 90%;
+            margin: 30px auto;
+            border: 1px solid #ccc;
+        }
+
         footer {
             background-color: #003366;
             color: white;
@@ -113,7 +121,7 @@
 </head>
 <body>
 
-  <div class="container">
+<div class="container">
     <h1>{% if admin %}PÁGINA DE ADMIN{% else %}PRODUTOS EM STOCK{% endif %}</h1>
     <div class="intro">
         Esta página mostra os produtos disponíveis no armazém. Use a senha para ver mais detalhes.
@@ -144,6 +152,8 @@
         <button onclick="nextPage()">PRÓXIMO</button>
     </div>
 
+    <div id="map"></div>
+
     <form method="POST" action="/admin">
         {% if senha_incorreta %}
             <div class="error-message">
@@ -154,12 +164,14 @@
         <input type="password" name="senha" required>
         <input type="submit" value="LOGIN">
     </form>
-  </div>
 
-  <footer>
-      &copy; 2025 Gestão de Stocks | Desenvolvido por Grupo 7
-  </footer>
+</div>
 
+<footer>
+    &copy; 2025 Gestão de Stocks | Desenvolvido por Grupo 7
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     const rowsPerPage = 10;
     let currentPage = 1;
@@ -193,7 +205,47 @@
     }
 
     showPage(currentPage);
-</script>
 
-</body>
-</html>
+
+    const map = L.map('map').setView([39.5, -8], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18
+    }).addTo(map);
+
+    const coordMap = {};
+
+    rows.forEach((row, index) => {
+        const cells = row.querySelectorAll("td");
+        if (cells.length < 2) return;
+
+        const latText = cells[cells.length - 2].textContent.trim();
+        const lngText = cells[cells.length - 1].textContent.trim();
+        const lat = parseFloat(latText.replace(",", "."));
+        const lng = parseFloat(lngText.replace(",", "."));
+
+        if (!isNaN(lat) && !isNaN(lng)) {
+            const key = lat + "," + lng;
+            if (!coordMap[key]) {
+                coordMap[key] = [];
+            }
+            coordMap[key].push(index + 1);
+        }
+    });
+
+    const markers = [];
+    Object.keys(coordMap).forEach(key => {
+        const [latStr, lngStr] = key.split(",");
+        const lat = parseFloat(latStr);
+        const lng = parseFloat(lngStr);
+
+        const marker = L.marker([lat, lng]).addTo(map);
+        const itemNumbers = coordMap[key].join(", ");
+        marker.bindPopup(`<strong>Item(s) neste ponto:</strong><br>${itemNumbers}`);
+        markers.push(marker);
+    });
+
+    if (markers.length > 0) {
+        const group = new L.featureGroup(markers);
+        map.fitBounds(group.getBounds());
+    }
+</script>
