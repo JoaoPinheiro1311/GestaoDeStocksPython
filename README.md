@@ -6,8 +6,7 @@ Aplicação desenvolvida em Python com interface web para gestão de stocks. Os 
 
 ## Links
 
-- [Preview](https://projetodoismads.onrender.com/)
-- Password de Admin: admin
+- [Preview](https://projetodoismads.onrender.com/) Password: admin
 
 - [Google Sheets](https://docs.google.com/spreadsheets/d/1JDPQrlpZshHa8PWKB_hiXygXC_OwdgXHB2P8z7O_Kz0/edit?gid=0#gid=0)
 
