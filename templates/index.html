@@ -117,6 +117,12 @@
             padding: 20px 0;
             text-align: center;
         }
+
+        .fora_validade { background-color: #ff4d4d !important; }
+        .proximo_validade { background-color: #ffa500 !important; }
+        .stock_baixo { background-color: #ffff66 !important; }
+</style>
+
     </style>
 </head>
 <body>
@@ -131,15 +137,19 @@
         <thead>
             <tr>
                 {% for key in items[0].keys() %}
-                    <th>{{ key }}</th>
+                    {% if key != 'Alerta' %}
+                        <th>{{ key }}</th>
+                    {% endif %}
                 {% endfor %}
             </tr>
         </thead>
         <tbody>
             {% for item in items %}
-            <tr>
-                {% for value in item.values() %}
-                    <td>{{ value }}</td>
+            <tr class="{{ item.get('Alerta', '') }}">
+                {% for key, value in item.items() %}
+                    {% if key != 'Alerta' %}
+                        <td>{{ value }}</td>
+                    {% endif %}
                 {% endfor %}
             </tr>
             {% endfor %}
@@ -152,7 +162,9 @@
         <button onclick="nextPage()">PRÓXIMO</button>
     </div>
 
-    <div id="map"></div>
+    {% if admin %}
+        <div id="map"></div>
+    {% endif %}
 
     <form method="POST" action="/admin">
         {% if senha_incorreta %}
@@ -168,7 +180,7 @@
 </div>
 
 <footer>
-    &copy; 2025 Gestão de Stocks | Desenvolvido por Grupo 7<br>
+    &copy; 2025 Gestão de Stocks | Desenvolvido por Grupo 7<br><br>
     <a href="https://github.com/JoaoPinheiro1311/GestaoDeStocksPython" target="_blank" style="color: #66ccff; text-decoration: none; margin: 0 10px;">GitHub</a> |
     <a href="https://docs.google.com/spreadsheets/d/1JDPQrlpZshHa8PWKB_hiXygXC_OwdgXHB2P8z7O_Kz0/edit?gid=0#gid=0" target="_blank" style="color: #66ccff; text-decoration: none; margin: 0 10px;">Google Sheets</a>
 </footer>
