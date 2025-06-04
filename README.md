@@ -21,5 +21,5 @@ Aplicação desenvolvida em Python com interface web para gestão de stocks. Os 
 
 - Python
 - Google Sheets API
-- Flask ou Streamlit (dependendo da implementação)
+- Flask
 - HTML/CSS
