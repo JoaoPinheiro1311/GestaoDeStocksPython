@@ -165,7 +165,6 @@
             background-color: #eef;
         }
 
-        /* Estilo para o botão de ordenação */
         .sort-button {
             background: none;
             border: none;
@@ -222,7 +221,6 @@
             margin: 0 8px;
         }
 
-        /* Classes de alerta (usadas em admin_basic/ admin_full) */
         tr.stock_vermelho {
             background-color: #ff4d4d !important;
         }
@@ -234,6 +232,43 @@
         tr.stock_baixo {
             background-color: #ffffcc !important;
         }
+
+        .aviso-cores {
+            width: 25%;
+            margin: 20px auto;
+            padding: 12px 16px;
+            background-color: #fffbe6;
+            border: 1px solid #ffd54f;
+            border-radius: 4px;
+            font-size: 0.95em;
+            color: #333;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: -20px;
+        }
+
+        .aviso-cores p {
+            margin: 4px 0;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .aviso-cores span {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            vertical-align: middle;
+            margin-right: 6px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+        }
+
+        .aviso-cores .vermelho {
+            background-color: #ff4d4d;
+        }
+
+        .aviso-cores .amarelo {
+            background-color: #ffff66;
+        }
     </style>
 </head>
 
@@ -243,7 +278,6 @@
         <div class="header-left">
             <div class="header-title">📦 Gestão de Stocks</div>
 
-            <!-- BUSCA para todos, inclusive público -->
             <div class="header-search">
                 <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="🔍 Procurar...">
             </div>
@@ -287,7 +321,6 @@
             {% endif %}
         </div>
 
-        <!-- Tabela de Stock -->
         <table id="stockTable">
             <thead>
                 <tr>
@@ -336,7 +369,6 @@
             </tbody>
         </table>
 
-        <!-- PAGINAÇÃO para todos, inclusive público -->
         <div class="pagination">
             <button onclick="prevPage()">ANTERIOR</button>
             <span id="pageInfo"></span>
@@ -344,10 +376,23 @@
         </div>
 
         {% if admin_full %}
-        <!-- Mapa apenas para super-admin -->
         <div id="map"></div>
         {% endif %}
     </div>
+
+    {% if admin_basic or admin_full %}
+    <div class="aviso-cores">
+        <p><strong>Significado das cores na tabela:</strong></p>
+        <p>
+            <span class="vermelho"></span>
+            Linhas em <strong>vermelho</strong>: produtos com stock inferior a 5
+        </p>
+        <p>
+            <span class="amarelo"></span>
+            Linhas em <strong>amarelo</strong>: produtos com stock inferior a 20
+        </p>
+    </div>
+    {% endif %}
 
     <footer>
         &copy; 2025 Gestão de Stocks - Desenvolvido por Grupo 7 🚀<br><br>
@@ -356,7 +401,6 @@
             target="_blank">📊 Google Sheets</a>
     </footer>
 
-    <!-- Leaflet JS (para o mapa) -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     {% if admin_full %}

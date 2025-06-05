@@ -25,10 +25,8 @@ def get_data(show_all=False):
             validade = datetime.strptime(validade_str, "%d/%m/%Y") if validade_str else None
             stock = int(row.get("Quantidade em Stock", 0))
 
-            # Em modo público não exibimos quantidades nem localização
             alerta = ""
             if show_all:
-                # Apenas no modo admin_full e admin_basic avaliamos validade/stock
                 if validade:
                     if validade < today:
                         alerta = "fora_validade"
@@ -36,14 +34,12 @@ def get_data(show_all=False):
                         alerta = "proximo_validade"
                 if stock <= 10 and not alerta:
                     alerta = "stock_baixo"
-                # No modo “admin_basic” e “admin_full” destacamos também cores de stock
                 if stock < 5:
                     alerta = "stock_vermelho"
                 elif stock < 20:
                     alerta = "stock_amarelo"
             row["Alerta"] = alerta
 
-            # Se estamos no modo admin_full, deixamos também Latitude/Longitude e Quantidade em Stock
             row["Latitude"] = float(row.get("Latitude", 0))    if show_all else None
             row["Longitude"] = float(row.get("Longitude", 0))  if show_all else None
             row["Quantidade em Stock"] = stock                if show_all else None
@@ -52,7 +48,6 @@ def get_data(show_all=False):
         except:
             continue
 
-    # Em modo não-admin (público), removemos os campos extras
     if not show_all:
         for row in filtered_rows:
             row.pop("Data de Entrada",    None)
@@ -79,7 +74,6 @@ def index():
         else:
             senha_incorreta = True
 
-    # Se for qualquer modo de admin (basic ou full), buscamos “show_all=True”
     items = get_data(show_all=(admin_basic or admin_full))
 
     return render_template(
