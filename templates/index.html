@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>{% if admin %}PÁGINA DE ADMIN{% else %}PRODUTOS EM STOCK{% endif %}</title>
+    <title>{% if admin %}Gestão de Stocks - Admin{% else %}Gestão de Stocks{% endif %}</title>
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='ico.png') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
     <style>
-        html, body {
+        html,
+        body {
             height: 100%;
             margin: 0;
         }
@@ -24,7 +27,8 @@
             box-sizing: border-box;
         }
 
-        h1, h2 {
+        h1,
+        h2 {
             text-align: center;
         }
 
@@ -42,7 +46,8 @@
             background-color: #fff;
         }
 
-        th, td {
+        th,
+        td {
             padding: 10px;
             border: 1px solid #ccc;
             text-align: center;
@@ -118,148 +123,208 @@
             text-align: center;
         }
 
-        .fora_validade { background-color: #ff4d4d !important; }
-        .proximo_validade { background-color: #ffa500 !important; }
-        .stock_baixo { background-color: #ffff66 !important; }
-</style>
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 15px 30px;
+            position: relative;
+            /* importante para o botão ficar posicionado em relação a este */
+            height: 35px;
+        }
 
+        .header-title {
+            font-size: 1.6em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 12px;
+            right: 30px;
+            font-size: 1em;
+            background-color: #ff4d4d;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: #cc0000;
+        }
+
+        /* ----------- Classes de alerta (só serão usadas em admin) ----------- */
+        tr.stock_vermelho {
+            background-color: #ff4d4d !important;
+        }
+
+        tr.stock_amarelo {
+            background-color: #ffff66 !important;
+        }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>{% if admin %}PÁGINA DE ADMIN{% else %}PRODUTOS EM STOCK{% endif %}</h1>
-    <div class="intro">
-        Esta página mostra os produtos disponíveis no armazém. Use a senha para ver mais detalhes.
-    </div>
+    <header>
+        <div class="header-title">
+            📦 <span>Gestão de Stocks</span>
+        </div>
+        {% if admin %}
+        <a href="/" class="logout-btn" title="Sair da conta">🔓 Logout</a>
+        {% endif %}
+    </header>
 
-    <table id="stockTable">
-        <thead>
-            <tr>
-                {% for key in items[0].keys() %}
+    <div class="container">
+        <h1>{% if admin %}PÁGINA DE ADMIN{% else %}PRODUTOS EM STOCK{% endif %}</h1>
+        <div class="intro">
+            {% if admin %}
+            Estás agora em modo admin! Consegues ver mais informações sobre os produtos.
+            {% else %}
+            Esta página mostra os produtos disponíveis no armazém. Use a senha para ver mais detalhes.
+            {% endif %}
+        </div>
+
+        <table id="stockTable">
+            <thead>
+                <tr>
+                    {% for key in items[0].keys() %}
                     {% if key != 'Alerta' %}
-                        <th>{{ key }}</th>
+                    <th>{{ key }}</th>
                     {% endif %}
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr class="{{ item.get('Alerta', '') }}">
-                {% for key, value in item.items() %}
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr {% if admin and item.get('Alerta') %} class="{{ item.get('Alerta') }}" {% endif %}>
+                    {% for key, value in item.items() %}
                     {% if key != 'Alerta' %}
-                        <td>{{ value }}</td>
+                    <td>{{ value }}</td>
                     {% endif %}
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </tbody>
+        </table>
 
-    <div class="pagination">
-        <button onclick="prevPage()">ANTERIOR</button>
-        <span id="pageInfo"></span>
-        <button onclick="nextPage()">PRÓXIMO</button>
-    </div>
+        <div class="pagination">
+            <button onclick="prevPage()">ANTERIOR</button>
+            <span id="pageInfo"></span>
+            <button onclick="nextPage()">PRÓXIMO</button>
+        </div>
 
-    {% if admin %}
+        {% if admin %}
         <div id="map"></div>
-    {% endif %}
+        {% endif %}
 
-    <form method="POST" action="/admin">
-        {% if senha_incorreta %}
+        {% if not admin %}
+        <form method="POST" action="/admin">
+            {% if senha_incorreta %}
             <div class="error-message">
                 ⚠️ Senha incorreta, tente novamente.
             </div>
+            {% endif %}
+            <label><strong>PASSWORD:</strong></label>
+            <input type="password" name="senha" required>
+            <input type="submit" value="LOGIN">
+        </form>
         {% endif %}
-        <label><strong>PASSWORD:</strong></label>
-        <input type="password" name="senha" required>
-        <input type="submit" value="LOGIN">
-    </form>
 
-</div>
+    </div>
 
-<footer>
-    &copy; 2025 Gestão de Stocks | Desenvolvido por Grupo 7<br><br>
-    <a href="https://github.com/JoaoPinheiro1311/GestaoDeStocksPython" target="_blank" style="color: #66ccff; text-decoration: none; margin: 0 10px;">GitHub</a> |
-    <a href="https://docs.google.com/spreadsheets/d/1JDPQrlpZshHa8PWKB_hiXygXC_OwdgXHB2P8z7O_Kz0/edit?gid=0#gid=0" target="_blank" style="color: #66ccff; text-decoration: none; margin: 0 10px;">Google Sheets</a>
-</footer>
+    <footer>
+        &copy; 2025 Gestão de Stocks | Desenvolvido por Grupo 7 🚀<br><br>
+        <a href="https://github.com/JoaoPinheiro1311/GestaoDeStocksPython" target="_blank"
+            style="color: #66ccff; text-decoration: none; margin: 0 10px;">🐙 GitHub</a> |
+        <a href="https://docs.google.com/spreadsheets/d/1JDPQrlpZshHa8PWKB_hiXygXC_OwdgXHB2P8z7O_Kz0/edit?gid=0#gid=0"
+            target="_blank" style="color: #66ccff; text-decoration: none; margin: 0 10px;">📊 Google Sheets</a>
+    </footer>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    const rowsPerPage = 10;
-    let currentPage = 1;
-    const table = document.getElementById("stockTable");
-    const rows = table.querySelectorAll("tbody tr");
-    const pageInfo = document.getElementById("pageInfo");
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const rowsPerPage = 10;
+        let currentPage = 1;
+        const table = document.getElementById("stockTable");
+        const rows = table.querySelectorAll("tbody tr");
+        const pageInfo = document.getElementById("pageInfo");
 
-    function showPage(page) {
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
+        function showPage(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            rows.forEach((row, index) => {
+                row.style.display = (index >= start && index < end) ? "" : "none";
+            });
+
+            pageInfo.textContent = `Página ${page} de ${Math.ceil(rows.length / rowsPerPage)}`;
+        }
+
+        function nextPage() {
+            if (currentPage < Math.ceil(rows.length / rowsPerPage)) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage(currentPage);
+            }
+        }
+
+        showPage(currentPage);
+
+
+        const map = L.map('map').setView([39.5, -8], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18
+        }).addTo(map);
+
+        const coordMap = {};
 
         rows.forEach((row, index) => {
-            row.style.display = (index >= start && index < end) ? "" : "none";
+            const cells = row.querySelectorAll("td");
+            if (cells.length < 2) return;
+
+            const latText = cells[cells.length - 2].textContent.trim();
+            const lngText = cells[cells.length - 1].textContent.trim();
+            const lat = parseFloat(latText.replace(",", "."));
+            const lng = parseFloat(lngText.replace(",", "."));
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                const key = lat + "," + lng;
+                if (!coordMap[key]) {
+                    coordMap[key] = [];
+                }
+                coordMap[key].push(index + 1);
+            }
         });
 
-        pageInfo.textContent = `Página ${page} de ${Math.ceil(rows.length / rowsPerPage)}`;
-    }
+        const markers = [];
+        Object.keys(coordMap).forEach(key => {
+            const [latStr, lngStr] = key.split(",");
+            const lat = parseFloat(latStr);
+            const lng = parseFloat(lngStr);
 
-    function nextPage() {
-        if (currentPage < Math.ceil(rows.length / rowsPerPage)) {
-            currentPage++;
-            showPage(currentPage);
+            const marker = L.marker([lat, lng]).addTo(map);
+            const itemNumbers = coordMap[key].join(", ");
+            marker.bindPopup(`<strong>Item(s) neste ponto:</strong><br>${itemNumbers}`);
+            markers.push(marker);
+        });
+
+        if (markers.length > 0) {
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds());
         }
-    }
+    </script>
 
-    function prevPage() {
-        if (currentPage > 1) {
-            currentPage--;
-            showPage(currentPage);
-        }
-    }
+</body>
 
-    showPage(currentPage);
-
-
-    const map = L.map('map').setView([39.5, -8], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 18
-    }).addTo(map);
-
-    const coordMap = {};
-
-    rows.forEach((row, index) => {
-        const cells = row.querySelectorAll("td");
-        if (cells.length < 2) return;
-
-        const latText = cells[cells.length - 2].textContent.trim();
-        const lngText = cells[cells.length - 1].textContent.trim();
-        const lat = parseFloat(latText.replace(",", "."));
-        const lng = parseFloat(lngText.replace(",", "."));
-
-        if (!isNaN(lat) && !isNaN(lng)) {
-            const key = lat + "," + lng;
-            if (!coordMap[key]) {
-                coordMap[key] = [];
-            }
-            coordMap[key].push(index + 1);
-        }
-    });
-
-    const markers = [];
-    Object.keys(coordMap).forEach(key => {
-        const [latStr, lngStr] = key.split(",");
-        const lat = parseFloat(latStr);
-        const lng = parseFloat(lngStr);
-
-        const marker = L.marker([lat, lng]).addTo(map);
-        const itemNumbers = coordMap[key].join(", ");
-        marker.bindPopup(`<strong>Item(s) neste ponto:</strong><br>${itemNumbers}`);
-        markers.push(marker);
-    });
-
-    if (markers.length > 0) {
-        const group = new L.featureGroup(markers);
-        map.fitBounds(group.getBounds());
-    }
-</script>
+</html>

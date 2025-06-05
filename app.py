@@ -11,40 +11,27 @@ client = gspread.authorize(creds)
 
 sheet = client.open("Gestão de Stocks").sheet1
 
-def parse_coordinates(coord_str):
-    try:
-        lat, lng = coord_str.replace("°", "").split(",")
-        return float(lat.strip()), float(lng.strip())
-    except:
-        return None, None
-
 from datetime import datetime, timedelta
 
 def get_data(show_all=False):
     rows = sheet.get_all_records()
     filtered_rows = []
-    today = datetime.today()
 
     for row in rows:
         try:
-            validade_str = row.get("Data de Validade", "")
-            validade = datetime.strptime(validade_str, "%d/%m/%Y") if validade_str else None
             stock = int(row.get("Quantidade em Stock", 0))
+            alerta = ""
 
-            if show_all or stock > 10:
-                alerta = ""
-                if validade:
-                    if validade < today:
-                        alerta = "fora_validade"
-                    elif validade <= today + timedelta(days=5):
-                        alerta = "proximo_validade"
-                if stock <= 10 and not alerta:
-                    alerta = "stock_baixo"
+            # Nova lógica de cores:
+            if stock < 5:
+                alerta = "stock_vermelho"
+            elif stock < 20:
+                alerta = "stock_amarelo"
 
-                row["Alerta"] = alerta
-                row["Latitude"] = float(row.get("Latitude", 0))
-                row["Longitude"] = float(row.get("Longitude", 0))
-                filtered_rows.append(row)
+            row["Alerta"] = alerta
+            row["Latitude"] = float(row.get("Latitude", 0))
+            row["Longitude"] = float(row.get("Longitude", 0))
+            filtered_rows.append(row)
         except:
             continue
 
